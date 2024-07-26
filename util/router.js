@@ -12,7 +12,7 @@ export default class Router {
       get: (target, p, receiver) => {
         if (["post", "get", "put", "delete"].includes(p)) {
           return (path = "") => {
-            this.setMiddleware(p, path, controller[p]);
+            this.setMiddleware(p, path, controller[p].bind(controller));
 
             return receiver;
           };
