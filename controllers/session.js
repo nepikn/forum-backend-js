@@ -1,4 +1,10 @@
-export default class SessionController {
+import Controller from "../util/controller";
+
+export default class SessionController extends Controller {
+  constructor() {
+    super("users");
+  }
+
   post(req, res, next) {
     res.end();
   }

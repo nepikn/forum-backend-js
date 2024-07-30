@@ -1,9 +1,22 @@
 import Db from "./db";
 
 export default class Controller {
-  db;
+  table;
+  // db;
 
   constructor(table) {
-    this.db = new Db(table);
+    this.table = table;
+    // this.db = Db;
+    // this.db = new Db(table);
   }
+
+  populateSql = (req, res, next) => {
+    req.sql = {
+      table: this.table,
+      toString() {
+        // todo
+      },
+    };
+    next();
+  };
 }

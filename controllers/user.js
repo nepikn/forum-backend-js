@@ -1,4 +1,10 @@
-export default class UserController {
+import Controller from "../util/controller";
+
+export default class UserController extends Controller {
+  constructor() {
+    super("users");
+  }
+
   post(req, res, next) {
     res.end();
   }
