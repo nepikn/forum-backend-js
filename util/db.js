@@ -27,19 +27,16 @@ export default class Db {
   // }
 
   static select = [
-    (req, res, next) => {
-      const { table, cols } = req.sql;
+    ({ sql }, res, next) => {
+      const { table, cols } = sql;
 
-      req.sql.base =
-        `SELECT ${cols?.join(", ") ?? "*"} FROM ${table} ` + req.sql.base;
+      sql.base = `SELECT ${cols?.join(", ") ?? "*"} FROM ${table} ${sql.base}`;
 
       next();
     },
     Db.query,
-    (req, res, next) => {
-      res.body = ((result) => (result.length == 1 ? result[0] : result))(
-        res.body
-      );
+    (req, { body }, next) => {
+      body = body.length == 1 ? body[0] : body;
 
       next();
     },
