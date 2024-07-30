@@ -26,14 +26,24 @@ export default class Db {
   //   );
   // }
 
-  async select({ cols, conds } = {}) {
-    const result = await this.query(
-      `SELECT ${cols?.join(", ") ?? "*"} FROM ${this.table}`,
-      { conds }
-    );
+  static select = [
+    (req, res, next) => {
+      const { table, cols } = req.sql;
 
-    return result.length == 1 ? result[0] : result;
-  }
+      req.sql.base =
+        `SELECT ${cols?.join(", ") ?? "*"} FROM ${table} ` + req.sql.base;
+
+      next();
+    },
+    Db.query,
+    (req, res, next) => {
+      res.body = ((result) => (result.length == 1 ? result[0] : result))(
+        res.body
+      );
+
+      next();
+    },
+  ];
 
   // update(props, conds) {
   //   assignment = join(', ', array_map(
@@ -63,23 +73,30 @@ export default class Db {
   //   );
   // }
 
-  async query(sql, { params, conds } = {}) {
-    if (conds) {
-      sql += Sql.where(conds);
+  static async query(req, res, next) {
+    const sql = req.sql.toString();
+    const { params } = req.sql;
+
+    try {
+      const [result, fields] = await (params
+        ? Db.pool.execute(sql, params)
+        : Db.pool.query(sql));
+
+      res.body = result === true ? null : result;
+
+      next();
+    } catch (error) {
+      next(error);
     }
-
-    const [result, fields] = await (params
-      ? Db.pool.execute(sql, params)
-      : Db.pool.query(sql));
-
-    return result === true ? null : result;
   }
 }
 
-class Sql {
+export class Sql {
   static where(conds) {
-    return ` WHERE ${Object.entries(conds)
-      .map(([col, val]) => `${col} = ${val}`)
-      .join(" AND ")}`;
+    return conds
+      ? ` WHERE ${Object.entries(conds)
+          .map(([col, val]) => `${col} = ${val}`)
+          .join(" AND ")}`
+      : "";
   }
 }

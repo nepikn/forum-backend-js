@@ -1,4 +1,4 @@
-import Db from "./db";
+import Db, { Sql } from "./db";
 
 export default class Controller {
   table;
@@ -13,8 +13,9 @@ export default class Controller {
   populateSql = (req, res, next) => {
     req.sql = {
       table: this.table,
+      base: "",
       toString() {
-        // todo
+        return (this.base += Sql.where(this.conds));
       },
     };
     next();
