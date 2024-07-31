@@ -3,14 +3,19 @@
   "type": "module",
   "scripts": {
     "test": "",
-    "start": "nodemon --import=extensionless/register"
+    "start": "nodemon --import=extensionless/register",
+    "debug": "set DEBUG=express:* & nodemon --import=extensionless/register index.js 4000"
   },
   "license": "MIT",
   "devDependencies": {
     "nodemon": "^3.1.4"
   },
   "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "express-session": "^1.18.0",
     "extensionless": "^1.9.9",
     "mysql2": "^3.10.3"
   }
