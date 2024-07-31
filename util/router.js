@@ -8,8 +8,11 @@ export default class Router {
     this.targetRouter.use(this.controller.populateSql);
   }
 
-  setMiddleware(method, path) {
-    this.targetRouter[method](path, this.controller[method]);
+  setMiddleware(method, path, handlers) {
+    this.targetRouter[method](
+      path,
+      handlers.length ? handlers : this.controller[method]
+    );
   }
   // setMiddleware(method, path, controller) {
   //   this.targetRouter[method](path, async (req, res, next) => {
@@ -30,7 +33,7 @@ export default class Router {
       get: (target, p, receiver) => {
         if (["post", "get", "put", "delete"].includes(p)) {
           return (path = "", ...handlers) => {
-            this.setMiddleware(p, path);
+            this.setMiddleware(p, path, handlers);
 
             return receiver;
           };

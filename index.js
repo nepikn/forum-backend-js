@@ -8,7 +8,11 @@ for (const key of Object.keys(routers)) {
   app.use(`/${key}`, routers[key]);
 }
 app.use((req, res, next) => {
-  res.send(res.body);
+  if (res.body === undefined) {
+    res.status(500).send("no body");
+  } else {
+    res.send(Number.isFinite(res.body) ? `${res.body}` : res.body);
+  }
 });
 
 app.listen(port, () => {

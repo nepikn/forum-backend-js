@@ -32,6 +32,15 @@ export default class CommentController extends Controller {
     Db.select,
   ];
 
+  getLength = [
+    ({ sql }, res, next) => {
+      sql.cols = ["COUNT(*)"];
+
+      next();
+    },
+    Db.select,
+  ];
+
   put(req, res, next) {
     res.end();
   }

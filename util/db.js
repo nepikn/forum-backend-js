@@ -35,11 +35,7 @@ export default class Db {
       next();
     },
     Db.query,
-    (req, { body }, next) => {
-      body = body.length == 1 ? body[0] : body;
-
-      next();
-    },
+    Db.extractResult,
   ];
 
   // update(props, conds) {
@@ -85,6 +81,17 @@ export default class Db {
     } catch (error) {
       next(error);
     }
+  }
+
+  static extractResult(req, res, next) {
+    if (res.body.length == 1) {
+      const result = res.body[0];
+      const keys = Object.keys(result);
+
+      res.body = keys.length == 1 ? result[keys[0]] : result;
+    }
+
+    next();
   }
 }
 
