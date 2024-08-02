@@ -12,6 +12,14 @@ export default class Db {
     this.table = table;
   }
 
+  static async insert() {
+    const [result, fields] = await Db.pool.query(
+      "INSERT INTO test.users (name) VALUES ('uwu')"
+    );
+
+    console.log([result, fields]);
+  }
+
   // insert(props) {
   //   return this.handleQuery(
   //     "INSERT INTO this.table (%s) VALUES (%s)",
@@ -69,13 +77,15 @@ export default class Db {
   static async query(req, res, next) {
     const sql = req.sql.toString();
     const { params } = req.sql;
+    console.log([sql, params]);
 
     try {
       const [result, fields] = await (params
         ? Db.pool.execute(sql, params)
         : Db.pool.query(sql));
 
-      res.body = result === true ? null : result;
+      res.body = result.length == 0 ? null : result;
+      console.log(res.body);
 
       next();
     } catch (error) {
@@ -84,11 +94,11 @@ export default class Db {
   }
 
   static extractResult(req, res, next) {
-    if (res.body.length == 1) {
+    if (res.body?.length == 1) {
       const result = res.body[0];
-      const keys = Object.keys(result);
+      const vals = Object.values(result);
 
-      res.body = keys.length == 1 ? result[keys[0]] : result;
+      res.body = vals.length == 1 ? vals[0] : result;
     }
 
     next();

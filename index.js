@@ -32,11 +32,13 @@ app.use(
 for (const key of Object.keys(routers)) {
   app.use(`${process.env.API_BASE ?? ""}/${key}`, routers[key]);
 }
-app.use((req, res, next) => {
-  if (res.body === undefined) {
-    res.status(500).send("no body");
+app.use(function response(req, res, next) {
+  const { body, prop } = res;
+
+  if (body === undefined) {
+    res.end();
   } else {
-    res.send(Number.isFinite(res.body) ? `${res.body}` : res.body);
+    res.json(prop ? body[prop] : body);
   }
 });
 
