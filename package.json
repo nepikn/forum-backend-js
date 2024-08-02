@@ -4,7 +4,7 @@
   "scripts": {
     "test": "",
     "start": "nodemon --import=extensionless/register",
-    "debug": "set DEBUG=express:* & nodemon --import=extensionless/register index.js 4000"
+    "debug": "set DEBUG=express:router & nodemon --import=extensionless/register"
   },
   "license": "MIT",
   "devDependencies": {
