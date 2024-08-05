@@ -6,19 +6,25 @@ export default class Db {
     database: "forum",
   });
 
-  table;
+  // table;
 
-  constructor(table) {
-    this.table = table;
-  }
+  // constructor(table) {
+  //   this.table = table;
+  // }
 
-  static async insert() {
-    const [result, fields] = await Db.pool.query(
-      "INSERT INTO test.users (name) VALUES ('uwu')"
-    );
+  static insert = [
+    async ({ sql }, res, next) => {
+      const { table, cols } = sql;
 
-    console.log([result, fields]);
-  }
+      sql.base = `INSERT INTO ${table} (${cols.join(
+        ", "
+      )}) VALUES (?${", ?".repeat(cols.length - 1)})`;
+
+      next();
+    },
+    Db.query,
+    Db.respondInsertId,
+  ];
 
   // insert(props) {
   //   return this.handleQuery(
@@ -83,14 +89,20 @@ export default class Db {
       const [result, fields] = await (params
         ? Db.pool.execute(sql, params)
         : Db.pool.query(sql));
+      console.log(result);
 
       res.body = result.length == 0 ? null : result;
-      console.log(res.body);
 
       next();
     } catch (error) {
       next(error);
     }
+  }
+
+  static respondInsertId(req, res, next) {
+    res.body = res.body.insertId;
+
+    next();
   }
 
   static extractResult(req, res, next) {
