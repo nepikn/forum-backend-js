@@ -1,4 +1,4 @@
-import Db, { Sql } from "./db";
+import Db, { Sql } from "../db/query";
 
 export default class Controller {
   table;

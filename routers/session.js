@@ -1,6 +1,10 @@
 import Router from "../util/router";
 import SessionController from "../controllers/session";
 
-export const session = new Router(new SessionController());
-
-session.post().get("/:prop").put().delete();
+const sessionController = new SessionController();
+export const session = new Router(sessionController)
+  .use(SessionController.init)
+  .post()
+  .get("/authState", sessionController.getAuthState)
+  .put()
+  .delete();

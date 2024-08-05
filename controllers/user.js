@@ -1,4 +1,5 @@
 import Controller from "../util/controller";
+import Db from "../db/query";
 
 export default class UserController extends Controller {
   constructor() {

@@ -1,5 +1,5 @@
 import Controller from "../util/controller";
-import Db from "../util/db";
+import Db from "../db/query";
 
 export default class CommentController extends Controller {
   constructor() {
