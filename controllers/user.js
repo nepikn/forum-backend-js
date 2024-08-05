@@ -49,9 +49,18 @@ export default class UserController extends Controller {
     Db.select,
   ];
 
-  put(req, res, next) {
-    res.end();
-  }
+  put = [
+    (req, res, next) => {
+      req.query = { name: req.query["name"] };
+
+      req.sql.cols = Object.keys(req.query);
+      req.sql.params = Object.values(req.query);
+      req.sql.conds = { id: req.session.user.id };
+
+      next();
+    },
+    Db.update,
+  ];
 
   delete(req, res, next) {
     res.end();

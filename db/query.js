@@ -13,7 +13,7 @@ export default class Db {
   // }
 
   static insert = [
-    async ({ sql }, res, next) => {
+    ({ sql }, res, next) => {
       const { table, cols } = sql;
 
       sql.base = `INSERT INTO ${table} (${cols.join(
@@ -25,20 +25,6 @@ export default class Db {
     Db.query,
     Db.respondInsertId,
   ];
-
-  // insert(props) {
-  //   return this.handleQuery(
-  //     "INSERT INTO this.table (%s) VALUES (%s)",
-  //     [
-  //       'format_vals' => [
-  //         join(', ', array_keys(props)),
-  //         '?' . str_repeat(', ?', count(props) - 1)
-  //       ],
-  //       'params' => array_values(props),
-  //     ],
-  //     fn () => this.query('SELECT LAST_INSERT_ID() AS id')['id'],
-  //   );
-  // }
 
   static select = [
     ({ sql }, res, next) => {
@@ -52,24 +38,25 @@ export default class Db {
     Db.extractResult,
   ];
 
-  // update(props, conds) {
-  //   assignment = join(', ', array_map(
-  //     fn (key) => "key = ?",
-  //     array_keys(props)
-  //   ));
+  static update = [
+    ({ sql }, res, next) => {
+      const { table, cols } = sql;
 
-  //   return this.handleQuery(
-  //     "UPDATE this.table SET %s",
-  //     [
-  //       'format_vals' => [assignment],
-  //       'params' => array_values(props),
-  //       'conds' => conds,
-  //     ],
-  //     () use (props) {
-  //       return count(props) == 1 ? array_values(props)[0] : props;
-  //     }
-  //   );
-  // }
+      sql.base = `UPDATE ${table} SET ${cols
+        .map((col) => `${col} = ?`)
+        .join(", ")}`;
+
+      next();
+    },
+    Db.query,
+    (req, res, next) => {
+      const vals = Object.values(req.query);
+
+      res.body = vals.length == 1 ? vals[0] : req.query;
+
+      next();
+    },
+  ];
 
   // delete(id) {
   //   return this.handleQuery(
@@ -89,7 +76,7 @@ export default class Db {
       const [result, fields] = await (params
         ? Db.pool.execute(sql, params)
         : Db.pool.query(sql));
-      console.log(result);
+      // console.log(result);
 
       res.body = result.length == 0 ? null : result;
 
