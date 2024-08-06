@@ -10,7 +10,13 @@ export default class Controller {
     // this.db = new Db(table);
   }
 
-  populateSql = (req, res, next) => {
+  initSession(req, res, next) {
+    req.session.user ?? (req.session.user = {});
+
+    return next ? next() : req.session;
+  }
+
+  initSql = (req, res, next) => {
     req.sql = {
       table: this.table,
       base: "",

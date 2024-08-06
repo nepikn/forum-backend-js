@@ -3,12 +3,6 @@ import Controller from "../util/controller";
 import Db from "../db/query";
 
 export default class SessionController extends Controller {
-  static init(req, res, next) {
-    req.session.user ?? (req.session.user = {});
-
-    next();
-  }
-
   constructor() {
     super("users");
   }
@@ -27,13 +21,21 @@ export default class SessionController extends Controller {
       const sessionUser = req.session.user;
       const user = res.body;
 
-      if (bcryptjs.compareSync(req.query["passwd"], user["password"])) {
-        sessionUser.id = user.id;
-      } else {
+      if (!bcryptjs.compareSync(req.query["passwd"], user["password"])) {
         sessionUser.err = true;
+
+        return next();
       }
 
-      res.end();
+      req.session.regenerate((err) => {
+        if (err) return next(err);
+
+        this.initSession(req, res).user.id = user.id;
+
+        delete res.body;
+
+        next();
+      });
     },
   ];
 

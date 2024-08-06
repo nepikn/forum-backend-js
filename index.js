@@ -13,6 +13,7 @@ const app = express();
 const port = process.argv[2] ?? 3000;
 const secret = process.env.COOKIE_SECRET;
 
+app.use(express.json());
 app.use(cookieParser(secret));
 app.use(session({ secret, resave: false, saveUninitialized: false }));
 app.use(

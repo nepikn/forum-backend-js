@@ -1,13 +1,13 @@
 import express from "express";
-import SessionController from "../controllers/session";
+import Controller from "./controller";
 
 export default class Router {
+  /** @type {Controller} */
   controller;
   targetRouter = express.Router();
 
   useController() {
-    this.targetRouter.use(this.controller.populateSql);
-    this.targetRouter.use(SessionController.init);
+    this.targetRouter.use(this.controller.initSql, this.controller.initSession);
   }
 
   setMiddleware(method, path, handlers) {
