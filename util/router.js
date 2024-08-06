@@ -1,4 +1,5 @@
 import express from "express";
+import SessionController from "../controllers/session";
 
 export default class Router {
   controller;
@@ -6,6 +7,7 @@ export default class Router {
 
   useController() {
     this.targetRouter.use(this.controller.populateSql);
+    this.targetRouter.use(SessionController.init);
   }
 
   setMiddleware(method, path, handlers) {
@@ -14,15 +16,6 @@ export default class Router {
       handlers.length ? handlers : this.controller[method]
     );
   }
-  // setMiddleware(method, path, controller) {
-  //   this.targetRouter[method](path, async (req, res, next) => {
-  //     try {
-  //       res.send(await controller[method](req, res, next));
-  //     } catch (error) {
-  //       next(error);
-  //     }
-  //   });
-  // }
 
   constructor(controller) {
     this.controller = controller;

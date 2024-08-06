@@ -6,15 +6,25 @@ export default class CommentController extends Controller {
     super("comments");
   }
 
-  post(req, res, next) {
-    res.end();
-  }
+  post = [
+    (req, res, next) => {
+      const sessionUserId = req.session.user.id;
+      if (!sessionUserId) {
+        throw new Error("no session user id");
+      }
+
+      req.sql.cols = ["user_id", "content"];
+      req.sql.params = [sessionUserId, req.query["content"]];
+
+      next();
+    },
+    Db.insert,
+  ];
 
   get = [
     (req, res, next) => {
       const { page = 1, commentPerPage = 5 } = req.query;
 
-      // return this.db.query(`
       req.sql.base = `
         AS c
         INNER JOIN (
@@ -41,11 +51,33 @@ export default class CommentController extends Controller {
     Db.select,
   ];
 
-  put(req, res, next) {
-    res.end();
-  }
+  put = [
+    (req, res, next) => {
+      req.query = { content: req.query["content"] };
 
-  delete(req, res, next) {
-    res.end();
-  }
+      req.sql.cols = Object.keys(req.query);
+      req.sql.params = Object.values(req.query);
+      req.sql.conds = { id: req.params.id };
+
+      next();
+    },
+    Db.update,
+  ];
+
+  delete = [
+    (req, res, next) => {
+      req.sql.conds = { id: req.params.id };
+
+      next();
+    },
+    Db.select,
+    (req, res, next) => {
+      if (!res.body || req.session.user.id != res.body.user_id) {
+        return res.sendStatus(400);
+      }
+
+      next();
+    },
+    Db.delete,
+  ];
 }

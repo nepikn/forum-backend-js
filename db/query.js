@@ -58,25 +58,29 @@ export default class Db {
     },
   ];
 
-  // delete(id) {
-  //   return this.handleQuery(
-  //     "DELETE FROM this.table",
-  //     [
-  //       'conds' => ['id' => id],
-  //     ],
-  //   );
-  // }
+  static delete = [
+    ({ sql }, res, next) => {
+      const { table } = sql;
+
+      sql.base = `DELETE FROM ${table}`;
+
+      next();
+    },
+    Db.query,
+    Db.respondInsertId,
+  ];
 
   static async query(req, res, next) {
     const sql = req.sql.toString();
     const { params } = req.sql;
-    console.log([sql, params]);
+    if (req.method == "DELETE") {
+      // console.log([sql, params]);
+    }
 
     try {
       const [result, fields] = await (params
         ? Db.pool.execute(sql, params)
         : Db.pool.query(sql));
-      // console.log(result);
 
       res.body = result.length == 0 ? null : result;
 
