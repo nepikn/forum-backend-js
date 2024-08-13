@@ -3,12 +3,19 @@
   "type": "module",
   "scripts": {
     "test": "",
-    "start": "nodemon --import=extensionless/register",
-    "debug": "set DEBUG=express:router & nodemon --import=extensionless/register"
+    "start": "node index.js --import=extensionless/register",
+    "dev": "nodemon --import=extensionless/register",
+    "debug": "set DEBUG=express:router & nodemon --import=extensionless/register",
+    "db:init": "sequelize-cli init",
+    "model:generate": "sequelize-cli model:generate --name Comment --attributes content:string",
+    "db:migrate": "sequelize-cli db:migrate",
+    "seed:generate": "sequelize-cli seed:generate --name",
+    "db:seed:all": "sequelize-cli db:seed:all"
   },
   "license": "MIT",
   "devDependencies": {
-    "nodemon": "^3.1.4"
+    "nodemon": "^3.1.4",
+    "sequelize-cli": "^6.6.2"
   },
   "dependencies": {
     "@noble/hashes": "^1.4.0",
@@ -21,6 +28,7 @@
     "express-session": "^1.18.0",
     "extensionless": "^1.9.9",
     "hash-wasm": "^4.11.0",
-    "mysql2": "^3.10.3"
+    "mysql2": "^3.10.3",
+    "sequelize": "^6.37.3"
   }
 }
