@@ -1,83 +1,81 @@
+import db from "../db/models/index.cjs";
 import Controller from "../util/controller";
-import Db from "../db/query";
 
 export default class CommentController extends Controller {
   constructor() {
-    super("comments");
+    super("comments", "Comment");
   }
 
-  post = [
-    (req, res, next) => {
-      const sessionUserId = req.session.user.id;
-      if (!sessionUserId) {
-        throw new Error("no session user id");
-      }
+  post = (req, res, next) => {
+    const sessionUserId = req.session.user.id;
+    if (!sessionUserId) {
+      return res.sendStatus(400);
+    }
 
-      req.sql.cols = ["user_id", "content"];
-      req.sql.params = [sessionUserId, req.query["content"]];
+    this.model
+      .create({ content: req.query["content"], UserId: sessionUserId })
+      .then((comment) => {
+        res.json(comment.id);
+      })
+      .catch(next);
+  };
 
-      next();
-    },
-    Db.insert,
-  ];
+  get = (req, res, next) => {
+    const { page = 1, commentPerPage = 5 } = req.query;
 
-  get = [
-    (req, res, next) => {
-      const { page = 1, commentPerPage = 5 } = req.query;
+    this.model
+      .findAll({
+        include: db.User,
+        order: [["id", "DESC"]],
+        offset: (page - 1) * commentPerPage,
+        limit: +commentPerPage,
+      })
+      .then((comments) => {
+        res.json(
+          comments.map(({ id, content, User }) => ({
+            id,
+            content,
+            user_id: User.id,
+            commentator: User.name,
+          }))
+        );
+      })
+      .catch(next);
+  };
 
-      req.sql.base = `
-        AS c
-        INNER JOIN (
-          SELECT id AS user_id, name AS commentator FROM users
-        ) AS u
-        ON c.user_id = u.user_id
-        -- WHERE is_deleted IS NULL -- if soft deleting
-        -- AND c.id <= cursor -- todo: cursor-based pagination
-        ORDER BY c.id DESC
-        LIMIT ${(page - 1) * commentPerPage}, ${commentPerPage}
-      `;
+  getLength = (req, res, next) => {
+    this.model
+      .count()
+      .then((length) => res.json(length))
+      .catch(next);
+  };
 
-      next();
-    },
-    Db.select,
-  ];
+  put = (req, res, next) => {
+    this.verifyUser(req, res)
+      .then((comment) => {
+        if (!comment) return;
 
-  getLength = [
-    ({ sql }, res, next) => {
-      sql.cols = ["COUNT(*)"];
+        return comment.update(req.query, {
+          fields: ["content"],
+          where: {
+            id: req.params.id,
+          },
+        });
+      })
+      .then((comment) => {
+        res.json(req.query["content"]);
+      })
+      .catch(next);
+  };
 
-      next();
-    },
-    Db.select,
-  ];
+  delete = (req, res, next) => {
+    this.verifyUser(req, res)
+      .then((comment) => {
+        if (!comment) return;
 
-  put = [
-    (req, res, next) => {
-      req.query = { content: req.query["content"] };
-
-      req.sql.cols = Object.keys(req.query);
-      req.sql.params = Object.values(req.query);
-      req.sql.conds = { id: req.params.id };
-
-      next();
-    },
-    Db.update,
-  ];
-
-  delete = [
-    (req, res, next) => {
-      req.sql.conds = { id: req.params.id };
-
-      next();
-    },
-    Db.select,
-    (req, res, next) => {
-      if (!res.body || req.session.user.id != res.body.user_id) {
-        return res.sendStatus(400);
-      }
-
-      next();
-    },
-    Db.delete,
-  ];
+        return comment.destroy();
+      })
+      .then((delCount) => res.end())
+      .catch(next);
+  };
 }
