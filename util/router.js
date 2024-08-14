@@ -7,13 +7,17 @@ export default class Router {
   targetRouter = express.Router();
 
   useController() {
-    this.targetRouter.use(this.controller.initSql, this.controller.initSession);
+    this.targetRouter.use(this.controller.initSession);
   }
 
   setMiddleware(method, path, handlers) {
     this.targetRouter[method](
       path,
-      handlers.length ? handlers : this.controller[method]
+      handlers.length
+        ? handlers
+            .flat(Infinity)
+            .map((handler) => handler.bind(this.controller))
+        : (req, res, next) => this.controller[method](req, res, next)
     );
   }
 

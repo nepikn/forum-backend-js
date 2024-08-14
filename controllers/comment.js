@@ -3,14 +3,11 @@ import Controller from "../util/controller";
 
 export default class CommentController extends Controller {
   constructor() {
-    super("comments", "Comment");
+    super("Comment");
   }
 
-  post = (req, res, next) => {
+  post(req, res, next) {
     const sessionUserId = req.session.user.id;
-    if (!sessionUserId) {
-      return res.sendStatus(400);
-    }
 
     this.model
       .create({ content: req.query["content"], UserId: sessionUserId })
@@ -18,9 +15,9 @@ export default class CommentController extends Controller {
         res.json(comment.id);
       })
       .catch(next);
-  };
+  }
 
-  get = (req, res, next) => {
+  getAll(req, res, next) {
     const { page = 1, commentPerPage = 5 } = req.query;
 
     this.model
@@ -41,34 +38,22 @@ export default class CommentController extends Controller {
         );
       })
       .catch(next);
-  };
+  }
 
-  getLength = (req, res, next) => {
+  getLength(req, res, next) {
     this.model
       .count()
       .then((length) => res.json(length))
       .catch(next);
-  };
+  }
 
-  put = (req, res, next) => {
-    this.verifyUser(req, res)
-      .then((comment) => {
-        if (!comment) return;
+  put(req, res, next) {
+    req.fields = ["content"];
 
-        return comment.update(req.query, {
-          fields: ["content"],
-          where: {
-            id: req.params.id,
-          },
-        });
-      })
-      .then((comment) => {
-        res.json(req.query["content"]);
-      })
-      .catch(next);
-  };
+    super.put(req, res, next);
+  }
 
-  delete = (req, res, next) => {
+  delete(req, res, next) {
     this.verifyUser(req, res)
       .then((comment) => {
         if (!comment) return;
@@ -77,5 +62,5 @@ export default class CommentController extends Controller {
       })
       .then((delCount) => res.end())
       .catch(next);
-  };
+  }
 }

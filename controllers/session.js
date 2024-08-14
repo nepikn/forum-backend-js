@@ -1,75 +1,63 @@
 import bcryptjs from "bcryptjs";
 import Controller from "../util/controller";
-import Db from "../db/query";
 
 export default class SessionController extends Controller {
   constructor() {
-    super("users");
+    super("User");
   }
 
-  post = [
-    (req, res, next) => {
-      const { name } = req.session.user;
+  async post(req, res, next) {
+    const sessionUser = req.session.user;
 
-      req.sql.conds = { name: "?" };
-      req.sql.params = [name];
+    try {
+      const user = await this.model.findOne({
+        where: { name: sessionUser.name },
+      });
 
-      next();
-    },
-    Db.select,
-    (req, res, next) => {
-      const sessionUser = req.session.user;
-      const user = res.body;
-
-      if (!bcryptjs.compareSync(req.query["passwd"], user["password"])) {
+      if (!bcryptjs.compareSync(req.query["passwd"], user.password)) {
         sessionUser.err = true;
 
-        return next();
+        return res.end();
       }
 
       req.session.regenerate((err) => {
-        if (err) return next(err);
+        if (err) throw err;
 
-        this.initSession(req, res).user.id = user.id;
+        this.initSession(req).user.id = user.id;
 
-        delete res.body;
-
-        next();
+        res.end();
       });
-    },
-  ];
+    } catch (err) {
+      next(err);
+    }
+  }
 
-  getAuthState = [
-    (req, res, next) => {
-      const { err, name } = req.session.user;
-      if (err) {
-        res.body = "err";
-
-        next("route");
-      } else {
-        req.sql.conds = { name: "?" };
-        req.sql.params = [name];
-
-        next();
-      }
-    },
-    Db.select,
-    (req, res, next) => {
-      res.body = res.body ? "signIn" : "signUp";
-
-      next();
-    },
-  ];
+  async getAuthState(req, res, next) {
+    const { err, name } = req.session.user;
+    try {
+      res.json(
+        err
+          ? "err"
+          : (await this.model.findOne({ where: { name } }))
+          ? "signIn"
+          : "signUp"
+      );
+    } catch (err) {
+      next(err);
+    }
+  }
 
   put(req, res, next) {
-    req.session.user.name = req.query["name"];
+    const newName = req.query["name"];
 
-    next();
+    req.session.user.name = newName;
+
+    res.json(newName);
   }
 
   delete(req, res, next) {
     delete req.session.user;
 
-    next();
+    res.end();
   }
 }

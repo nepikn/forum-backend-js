@@ -33,13 +33,11 @@ app.use(
 for (const key of Object.keys(routers)) {
   app.use(`${process.env.API_BASE ?? ""}/${key}`, routers[key]);
 }
-app.use(function response(req, res, next) {
-  const { body, prop } = res;
-
-  if (body === undefined) {
-    res.end();
+app.use(function handleErr(err, req, res, next) {
+  if (Number.parseInt(err.message)) {
+    res.sendStatus(err.message);
   } else {
-    res.json(prop ? body[prop] : body);
+    next(err);
   }
 });
 

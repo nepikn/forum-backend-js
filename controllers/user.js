@@ -1,66 +1,46 @@
 import bcryptjs from "bcryptjs";
 import Controller from "../util/controller";
-import Db from "../db/query";
 
 export default class UserController extends Controller {
   constructor() {
-    super("users");
+    super("User");
   }
 
-  post = [
-    (req, res, next) => {
-      const sessionUserName = req.session.user.name;
-      if (!sessionUserName) {
-        throw new Error("no session username");
-      }
+  post(req, res, next) {
+    const sessionUserName = req.session.user.name;
 
-      req.sql.cols = ["name", "password"];
-      req.sql.params = [
-        sessionUserName,
-        bcryptjs.hashSync(req.query["passwd"]),
-      ];
+    this.model
+      .create({
+        name: sessionUserName,
+        password: bcryptjs.hashSync(req.query["passwd"]),
+      })
+      .then((user) => {
+        req.session.user.id = user.id;
 
-      next();
-    },
-    Db.insert,
-    (req, res, next) => {
-      req.session.user.id = res.body;
+        res.json(user.id);
+      })
+      .catch(next);
+  }
 
-      next();
-    },
-  ];
+  get(req, res, next) {
+    const sessionUser = req.session.user;
+    if (!sessionUser.id) {
+      return res.json(sessionUser);
+    }
 
-  get = [
-    (req, res, next) => {
-      const sessionUser = req.session.user;
+    this.model
+      .findByPk(sessionUser.id, { attributes: { exclude: ["password"] } })
+      .then((user) => {
+        res.json(user);
+      })
+      .catch(next);
+  }
 
-      res.prop = req.params.prop;
+  put(req, res, next) {
+    req.fields = ["name"];
 
-      if (!sessionUser.id) {
-        res.body = sessionUser;
-
-        return next("route");
-      }
-
-      req.sql.conds = { id: sessionUser.id };
-
-      next();
-    },
-    Db.select,
-  ];
-
-  put = [
-    (req, res, next) => {
-      req.query = { name: req.query["name"] };
-
-      req.sql.cols = Object.keys(req.query);
-      req.sql.params = Object.values(req.query);
-      req.sql.conds = { id: req.session.user.id };
-
-      next();
-    },
-    Db.update,
-  ];
+    super.put(req, res, next);
+  }
 
   delete(req, res, next) {
     res.end();
