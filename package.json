@@ -19,7 +19,6 @@
   },
   "dependencies": {
     "@noble/hashes": "^1.4.0",
-    "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -27,8 +26,8 @@
     "express": "^4.19.2",
     "express-session": "^1.18.0",
     "extensionless": "^1.9.9",
-    "hash-wasm": "^4.11.0",
     "mysql2": "^3.10.3",
-    "sequelize": "^6.37.3"
+    "sequelize": "^6.37.3",
+    "shelljs": "^0.8.5"
   }
 }
