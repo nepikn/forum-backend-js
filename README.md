@@ -59,7 +59,7 @@ git clone git@github.com:nepikn/$project.git
 
 cd $dest
 npm install
-node util/init.js
+node ./util/init.js
 # todo: config apache
 
 read -p "Enter the password of the MySQL user 'admin': " password

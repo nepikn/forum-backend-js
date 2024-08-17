@@ -20,11 +20,12 @@ module.exports = {
         },
       },
       createdAt: {
-        allowNull: false,
+        allowNull: true,
+        defaultValue: Sequelize.DataTypes.NOW,
         type: Sequelize.DATE,
       },
       updatedAt: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.DATE,
       },
     });

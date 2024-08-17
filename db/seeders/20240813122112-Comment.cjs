@@ -4,7 +4,7 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.bulkInsert(
-      "comments",
+      "Comments",
       [
         {
           content: "First post of the year!",

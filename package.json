@@ -3,7 +3,7 @@
   "type": "module",
   "scripts": {
     "test": "",
-    "start": "node index.js --import=extensionless/register",
+    "start": "NODE_ENV=production node --import=extensionless/register index.js",
     "dev": "nodemon --import=extensionless/register",
     "debug": "set DEBUG=express:router & nodemon --import=extensionless/register",
     "db:init": "sequelize-cli init",
