@@ -1,3 +1,4 @@
+import https from "https";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import { config } from "dotenv";
@@ -5,14 +6,17 @@ import express from "express";
 import session from "express-session";
 import helmet from "helmet";
 import routers from "./routers";
+import morgan from "morgan";
 
 const { parsed: env } = config({
-  path: [`.env.${process.env.NODE_ENV ?? "development"}`, ".env"],
+  path: [`.env.${process.env.NODE_ENV}`, ".env"],
 });
 const app = express();
-const port = process.argv[2] ?? 3000;
+const port = env.PORT ?? 3000;
 const secret = env.COOKIE_SECRET;
+const isProd = env.NODE_ENV == "production";
 
+app.use(morgan(isProd ? "tiny" : "dev"));
 app.use(helmet());
 app.use(express.json());
 app.use(cookieParser(secret));
@@ -50,6 +54,15 @@ app.use(function handleErr(err, req, res, next) {
   }
 });
 
-app.listen(port, () => {
+(isProd
+  ? https.createServer(
+      {
+        cert: env.SSL_CERT,
+        key: env.SSL_KEY,
+      },
+      app
+    )
+  : app
+).listen(port, () => {
   console.log(`running on http://localhost:${port}`);
 });

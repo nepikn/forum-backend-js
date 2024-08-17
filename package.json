@@ -27,6 +27,7 @@
     "express-session": "^1.18.0",
     "extensionless": "^1.9.9",
     "helmet": "^7.1.0",
+    "morgan": "^1.10.0",
     "mysql2": "^3.10.3",
     "sequelize": "^6.37.3",
     "shelljs": "^0.8.5"
