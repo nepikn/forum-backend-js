@@ -4,7 +4,8 @@
     "password": null,
     "database": "forum_sequelize",
     "host": "127.0.0.1",
-    "dialect": "mysql"
+    "dialect": "mysql",
+    "logging": false
   },
   "test": {
     "username": "root",
@@ -18,6 +19,7 @@
     "password": "auth_string",
     "database": "forum_sequelize",
     "host": "127.0.0.1",
-    "dialect": "mysql"
+    "dialect": "mysql",
+    "logging": false
   }
 }

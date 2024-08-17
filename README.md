@@ -36,6 +36,8 @@
 ## 安裝
 
 ```bash
+export NODE_ENV=production
+
 GREY="\e[90m"
 NC="\e[0m"
 
@@ -56,12 +58,13 @@ fi
 git clone git@github.com:nepikn/$project.git
 
 cd $dest
+npm install
 node util/init.js
 # todo: config apache
 
 read -p "Enter the password of the MySQL user 'admin': " password
-sed -i "s/auth_string/$password/g" config/db.json
-mysql -u root < db/init.sql
+sed -i "s/auth_string/$password/g" config/db.json db/init.sql
+sudo mysql -u root < db/init.sql
 npm run db:migrate
 npm run db:seed:all
 sudo systemctl restart mysql
