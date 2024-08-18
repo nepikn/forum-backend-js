@@ -1,12 +1,13 @@
-import https from "https";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import { config } from "dotenv";
 import express from "express";
 import session from "express-session";
+import { readFileSync } from "fs";
 import helmet from "helmet";
-import routers from "./routers";
+import https from "https";
 import morgan from "morgan";
+import routers from "./routers";
 
 const { parsed: env } = config({
   path: [`.env.${process.env.NODE_ENV}`, ".env"],
@@ -57,12 +58,14 @@ app.use(function handleErr(err, req, res, next) {
 (isProd
   ? https.createServer(
       {
-        cert: env.SSL_CERT,
-        key: env.SSL_KEY,
+        // cert: env.CERT,
+        // key: env.KEY,
+        cert: readFileSync(env.CERT),
+        key: readFileSync(env.KEY),
       },
       app
     )
   : app
 ).listen(port, () => {
-  console.log(`running on http://localhost:${port}`);
+  console.log(`running on port: ${port}`);
 });
