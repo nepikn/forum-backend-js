@@ -16,19 +16,18 @@
 | 路徑               | 方法   |
 | ------------------ | ------ |
 | /seseion           | POST   |
-|                    | DELETE |
+| /seseion           | DELETE |
 | /seseion/authState | GET    |
 | /user              | POST   |
-|                    | PUT    |
+| /user              | PUT    |
 | /comment           | POST   |
-|                    | GET    |
+| /comment           | GET    |
 | /comment/length    | GET    |
 | /comment/:id       | PUT    |
 | /comment/:id       | DELETE |
 
 ## 主要技術
 
-- Apache v2
 - Express v4
 - MySQL v8
 - Sequelize v6
@@ -38,9 +37,11 @@
 ```bash
 export NODE_ENV=production
 
+# style
 GREY="\e[90m"
 NC="\e[0m"
 
+# read inputs
 dir=/var/www/
 project=forum-backend-js
 
@@ -55,16 +56,17 @@ if [[ "$(ls -A $dest)" ]]; then
   read ans
   rm $dest -fr
 fi
-git clone git@github.com:nepikn/$project.git
-
-cd $dest
-npm install
-node ./util/init.js
-# todo: config apache
 
 read -p "Enter the password of the MySQL user 'admin': " password
-sed -i "s/auth_string/$password/g" config/db.json db/init.sql
-sudo mysql -u root < db/init.sql
+
+# init
+git clone git@github.com:nepikn/$project.git
+cd $dest
+npm install
+node start/session.js
+
+sed -i "s/auth_string/$password/g" config/db.json start/db.sql
+sudo mysql -u root < start/db.sql
 npm run db:migrate
 npm run db:seed:all
 sudo systemctl restart mysql
@@ -72,7 +74,78 @@ sudo systemctl restart mysql
 
 ## 學習內容
 
-- [學習歷程 - Apache](https://hackmd.io/o_t2Xo_tR-m5VU2Yd2xFsg?view)
 - [學習歷程 - MySQL](https://hackmd.io/IGSwDtGbShqUfFx2O1djTQ?view)
-- Express
-- Sequelize
+- 代理 `express.Router` 以實現預設 middleware
+
+```js
+// util/router.js
+export default class Router {
+  targetRouter = express.Router();
+  // ...
+
+  constructor(controller) {
+    // ...
+
+    return new Proxy(this.targetRouter, {
+      get: (target, p, receiver) => {
+        if (["post", "get", "put", "delete"].includes(p)) {
+          return (path = "", ...handlers) => {
+            this.setMiddleware(p, path, handlers);
+
+            return receiver;
+          };
+        }
+        return target[p];
+      },
+    });
+  }
+}
+```
+
+```js
+// routers/comment.js
+const commentController = new CommentController();
+export const comment = new Router(commentController)
+  .post()
+  .get("", commentController.getAll)
+  .get("/length", commentController.getLength)
+  .put("/:id")
+  .delete("/:id");
+```
+
+- 調整 `sequelize-cli` 生成的 model 使其相互關聯
+
+```js
+// db/models/user.cjs
+module.exports = (sequelize, DataTypes) => {
+  class User extends Model {
+    static associate(models) {
+      this.hasMany(models.Comment);
+    }
+  }
+
+  // ...
+};
+```
+
+- 藉由 `Sequelize.Model` 處理 HTTP 請求
+
+```js
+// controllers/comment.js
+export default class CommentController extends Controller {
+  // ...
+
+  post(req, res, next) {
+    const sessionUserId = req.session.user.id;
+
+    this.model
+      .create({ content: req.query["content"], UserId: sessionUserId })
+      .then((comment) => {
+        res.json(comment.id);
+      })
+      .catch(next);
+  }
+
+  // ...
+}
+```
