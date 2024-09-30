@@ -3,7 +3,6 @@ import cors from "cors";
 import { config } from "dotenv";
 import express from "express";
 import session from "express-session";
-import { readFileSync } from "fs";
 import helmet from "helmet";
 import https from "https";
 import morgan from "morgan";
@@ -28,15 +27,15 @@ app.use(
     resave: false,
     saveUninitialized: false,
     // cookie: { secure: true, httpOnly: true },
-  })
+  }),
 );
 app.use(
   cors({
     origin: env.ALLOWED_ORIGINS.split(",").concat(
-      /^http:\/\/localhost(:\d+)?$/
+      /^http:\/\/localhost(:\d+)?$/,
     ),
     credentials: true,
-  })
+  }),
 );
 // app.use((req, res, next) => {
 //   console.log(req);
@@ -58,12 +57,12 @@ app.use(function handleErr(err, req, res, next) {
 (isProd
   ? https.createServer(
       {
-        // cert: env.CERT,
-        // key: env.KEY,
-        cert: readFileSync(env.CERT),
-        key: readFileSync(env.KEY),
+        cert: env.CERT,
+        key: env.KEY,
+        // cert: readFileSync(env.CERT),
+        // key: readFileSync(env.KEY),
       },
-      app
+      app,
     )
   : app
 ).listen(port, () => {
