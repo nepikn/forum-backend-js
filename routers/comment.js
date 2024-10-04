@@ -1,5 +1,5 @@
-import Router from "../util/router";
 import CommentController from "../controllers/comment";
+import Router from "../util/router";
 
 const commentController = new CommentController();
 export const comment = new Router(commentController)

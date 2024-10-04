@@ -4,7 +4,6 @@ import { config } from "dotenv";
 import express from "express";
 import session from "express-session";
 import helmet from "helmet";
-import https from "https";
 import morgan from "morgan";
 import routers from "./routers";
 
@@ -29,23 +28,20 @@ app.use(
     // cookie: { secure: true, httpOnly: true },
   }),
 );
-app.use(
-  cors({
-    origin: env.ALLOWED_ORIGINS.split(",").concat(
-      /^http:\/\/localhost(:\d+)?$/,
-    ),
-    credentials: true,
-  }),
-);
-// app.use((req, res, next) => {
-//   console.log(req);
-//   next();
-// });
-// console.log(env.NODE_ENV);
+
+if (!isProd) {
+  app.use(
+    cors({
+      origin: true,
+      credentials: true,
+    }),
+  );
+}
 
 for (const key of Object.keys(routers)) {
   app.use(`${env.API_BASE ?? ""}/${key}`, routers[key]);
 }
+
 app.use(function handleErr(err, req, res, next) {
   if (Number.parseInt(err.message)) {
     res.sendStatus(err.message);
@@ -54,17 +50,18 @@ app.use(function handleErr(err, req, res, next) {
   }
 });
 
-(isProd
-  ? https.createServer(
-      {
-        cert: env.CERT,
-        key: env.KEY,
-        // cert: readFileSync(env.CERT),
-        // key: readFileSync(env.KEY),
-      },
-      app,
-    )
-  : app
-).listen(port, () => {
+// isProd
+//   ? https.createServer(
+//       {
+//         cert: env.CERT,
+//         key: env.KEY,
+//         // cert: readFileSync(env.CERT),
+//         // key: readFileSync(env.KEY),
+//       },
+//       app,
+//     )
+//   : app;
+
+app.listen(port, () => {
   console.log(`running on port: ${port}`);
 });
